@@ -96,6 +96,10 @@
   .finish li b{ color:var(--text); }
 
   .offline-badge{ position:fixed; top:.4rem; right:.4rem; font-size:.62rem; background:var(--surface-2); border:1px solid var(--line); color:var(--text-dim); padding:.2rem .5rem; border-radius:20px; display:none; z-index:40; }
+
+  .hint-banner{ display:flex; align-items:center; gap:.6rem; background:var(--surface-2); border:1px solid var(--wheat);
+    border-radius:10px; padding:.6rem .7rem; margin-bottom:.6rem; font-size:.8rem; line-height:1.4; color:var(--text); }
+  .hint-close{ margin-left:auto; background:none; border:none; color:var(--text-dim); font-size:1rem; cursor:pointer; padding:.15rem; flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -119,9 +123,96 @@ var ZONE_ICONS = [
 ];
 var STORAGE_KEY = 'tipperary_state_v1';
 
+/* ---------- i18n ---------- */
+var LANGS = ['fr','en','de','it','es'];
+var LANG_LABELS = { fr:'Français', en:'English', de:'Deutsch', it:'Italiano', es:'Español' };
+var LANG_FLAGS = { fr:'🇫🇷', en:'🇬🇧', de:'🇩🇪', it:'🇮🇹', es:'🇪🇸' };
+var currentLang = 'fr';
+try { var savedLang = localStorage.getItem('tipperary_lang'); if (savedLang && LANGS.indexOf(savedLang) !== -1) currentLang = savedLang; } catch(e) {}
+
+var I18N = {
+  app_subtitle: { fr:'Tirage virtuel des tuiles Paysage', en:'Virtual landscape tile draw', de:'Virtuelles Ziehen der Landschaftsplättchen', it:'Pesca virtuale delle tessere Paesaggio', es:'Sorteo virtual de las losetas de Paisaje' },
+  players_label: { fr:'Nombre de joueurs', en:'Number of players', de:'Anzahl der Spieler', it:'Numero di giocatori', es:'Número de jugadores' },
+  start_btn: { fr:'Commencer la partie', en:'Start game', de:'Spiel starten', it:'Inizia partita', es:'Empezar partida' },
+  rounds_5: { fr:'10 manches seront jouées.', en:'10 rounds will be played.', de:'Es werden 10 Runden gespielt.', it:'Si giocheranno 10 round.', es:'Se jugarán 10 rondas.' },
+  rounds_other: { fr:'12 manches seront jouées.', en:'12 rounds will be played.', de:'Es werden 12 Runden gespielt.', it:'Si giocheranno 12 round.', es:'Se jugarán 12 rondas.' },
+  tile_note: { fr:'Le numéro de chaque tuile est visible sur sa face illustrée (1 à 60).', en:"Each tile's number is visible on its illustrated face (1 to 60).", de:'Die Nummer jedes Plättchens ist auf der bebilderten Seite sichtbar (1 bis 60).', it:'Il numero di ogni tessera è visibile sul lato illustrato (da 1 a 60).', es:'El número de cada loseta es visible en su cara ilustrada (1 a 60).' },
+  disclaimer: { fr:"Outil non-officiel créé par un fan, sans lien avec l'éditeur. Tipperary est un jeu de Günter Burkhardt (Lookout Games).", en:'Unofficial fan-made tool, not affiliated with the publisher. Tipperary is a game by Günter Burkhardt (Lookout Games).', de:'Inoffizielles Fan-Tool, nicht mit dem Verlag verbunden. Tipperary ist ein Spiel von Günter Burkhardt (Lookout Games).', it:"Strumento non ufficiale creato da un fan, senza alcun legame con l'editore. Tipperary è un gioco di Günter Burkhardt (Lookout Games)." },
+
+  finish_title: { fr:'Partie terminée', en:'Game finished', de:'Spiel beendet', it:'Partita terminata', es:'Partida terminada' },
+  finish_intro: { fr:'Placez vos Tours restantes, puis comptez vos points dans le carnet de score :', en:'Place your remaining Towers, then tally your points on the scoresheet:', de:'Setzt eure verbleibenden Türme, und zählt dann eure Punkte auf dem Punkteblock:', it:'Posizionate le Torri rimanenti, poi calcolate i punti sul blocco punteggio:', es:'Coloca tus Torres restantes y luego suma tus puntos en la hoja de puntuación:' },
+  cat_rect_t: { fr:'Terrain rectangulaire', en:'Rectangular field', de:'Rechteckiges Feld', it:'Terreno rettangolare', es:'Terreno rectangular' },
+  cat_rect_d: { fr:'1 PV par case du plus grand rectangle plein, sans case vide.', en:'1 VP per tile of your largest fully-filled rectangle, no empty spaces.', de:'1 SP pro Feld des größten vollständig gefüllten Rechtecks ohne leere Felder.', it:'1 PV per casella del rettangolo pieno più grande, senza caselle vuote.', es:'1 PV por casilla de tu rectángulo completo más grande, sin casillas vacías.' },
+  cat_sheep_t: { fr:'Moutons', en:'Sheep', de:'Schafe', it:'Pecore', es:'Ovejas' },
+  cat_sheep_d: { fr:'1 PV par mouton de votre plus grand troupeau, +5 PV pour le plus grand troupeau de la partie.', en:'1 VP per sheep in your largest flock, +5 VP for the largest flock in the game.', de:'1 SP pro Schaf eurer größten Herde, +5 SP für die größte Herde des Spiels.', it:'1 PV per pecora del gregge più grande, +5 PV per il gregge più grande della partita.', es:'1 PV por oveja de tu rebaño más grande, +5 PV por el rebaño más grande de la partida.' },
+  cat_explore_t: { fr:'Exploration', en:'Exploration', de:'Erkundung', it:'Esplorazione', es:'Exploración' },
+  cat_explore_d: { fr:'5 PV si votre Village est entièrement entouré de tuiles.', en:'5 VP if your Village is fully surrounded by tiles.', de:'5 SP, wenn euer Dorf vollständig von Plättchen umgeben ist.', it:'5 PV se il tuo Villaggio è completamente circondato da tessere.', es:'5 PV si tu Aldea está completamente rodeada de losetas.' },
+  cat_flour_t: { fr:'Farine', en:'Flour', de:'Mehl', it:'Farina', es:'Harina' },
+  cat_flour_d: { fr:'les PV indiqués sous votre Fût sur la piste de farine.', en:'the VP shown under your Barrel on the flour track.', de:'die SP, die unter eurem Fass auf der Mehlleiste angezeigt werden.', it:'i PV indicati sotto il tuo Barile sul tracciato della farina.', es:'los PV indicados bajo tu Barril en la pista de harina.' },
+  cat_stones_t: { fr:'Cercles de pierres', en:'Stone circles', de:'Steinkreise', it:'Cerchi di pietre', es:'Círculos de piedra' },
+  cat_stones_d: { fr:'la somme des valeurs de vos cercles de pierres.', en:'the sum of the values of your stone circles.', de:'die Summe der Werte eurer Steinkreise.', it:'la somma dei valori dei tuoi cerchi di pietre.', es:'la suma de los valores de tus círculos de piedra.' },
+  new_game_btn: { fr:'Nouvelle partie', en:'New game', de:'Neues Spiel', it:'Nuova partita', es:'Nueva partida' },
+
+  topbar_players: { fr:'— Partie à {n} joueurs', en:'— {n}-player game', de:'— Partie mit {n} Spielern', it:'— Partita a {n} giocatori', es:'— Partida a {n} jugadores' },
+  title_history: { fr:'Historique', en:'History', de:'Verlauf', it:'Cronologia', es:'Historial' },
+  title_more: { fr:"Plus d'options", en:'More options', de:'Weitere Optionen', it:'Altre opzioni', es:'Más opciones' },
+  title_lang: { fr:'Langue', en:'Language', de:'Sprache', it:'Lingua', es:'Idioma' },
+
+  round_last: { fr:'{round} (dernière) — terminez via ⋯ quand prêt', en:'{round} (last) — finish via ⋯ when ready', de:'{round} (letzte) — über ⋯ beenden, wenn bereit', it:'{round} (ultimo) — termina tramite ⋯ quando pronto', es:'{round} (última) — termina desde ⋯ cuando estés listo' },
+  round_warn: { fr:'{round} — ⚠ {have}/{need} placée(s), encore {remaining}', en:'{round} — ⚠ {have}/{need} placed, {remaining} more to go', de:'{round} — ⚠ {have}/{need} platziert, noch {remaining}', it:'{round} — ⚠ {have}/{need} posizionate, ancora {remaining}', es:'{round} — ⚠ {have}/{need} colocada(s), faltan {remaining}' },
+  round_ready: { fr:'{round} — ▶ tirer les tuiles', en:'{round} — ▶ draw the tiles', de:'{round} — ▶ Plättchen ziehen', it:'{round} — ▶ pesca le tessere', es:'{round} — ▶ sacar las losetas' },
+  round_word: { fr:'Manche', en:'Round', de:'Runde', it:'Round', es:'Ronda' },
+
+  zone_empty: { fr:'vide', en:'empty', de:'leer', it:'vuota', es:'vacío' },
+
+  log_empty: { fr:'Aucun événement pour le moment.', en:'No events yet.', de:'Noch keine Ereignisse.', it:'Nessun evento per ora.', es:'Ningún evento por ahora.' },
+  log_drawn: { fr:'tirée', en:'drawn', de:'gezogen', it:'pescata', es:'sacada' },
+  log_placed: { fr:'placée', en:'placed', de:'platziert', it:'posizionata', es:'colocada' },
+  btn_close: { fr:'Fermer', en:'Close', de:'Schließen', it:'Chiudi', es:'Cerrar' },
+
+  menu_undo: { fr:'↺ Annuler la dernière action', en:'↺ Undo last action', de:'↺ Letzte Aktion rückgängig', it:'↺ Annulla ultima azione', es:'↺ Deshacer la última acción' },
+  menu_finish: { fr:'🏁 Terminer la partie', en:'🏁 Finish game', de:'🏁 Spiel beenden', it:'🏁 Termina partita', es:'🏁 Terminar partida' },
+  menu_reset: { fr:'⟲ Nouvelle partie', en:'⟲ New game', de:'⟲ Neues Spiel', it:'⟲ Nuova partita', es:'⟲ Nueva partida' },
+
+  reset_title: { fr:'Nouvelle partie ?', en:'New game?', de:'Neues Spiel?', it:'Nuova partita?', es:'¿Nueva partida?' },
+  reset_body: { fr:'La partie en cours sera définitivement effacée.', en:'The current game will be permanently deleted.', de:'Das laufende Spiel wird endgültig gelöscht.', it:'La partita in corso verrà eliminata definitivamente.', es:'La partida en curso se borrará definitivamente.' },
+  btn_cancel: { fr:'✕ Annuler', en:'✕ Cancel', de:'✕ Abbrechen', it:'✕ Annulla', es:'✕ Cancelar' },
+  btn_confirm_reset: { fr:'⟲ Confirmer', en:'⟲ Confirm', de:'⟲ Bestätigen', it:'⟲ Conferma', es:'⟲ Confirmar' },
+
+  finish_confirm_title: { fr:'Terminer la partie ?', en:'Finish the game?', de:'Spiel beenden?', it:'Terminare la partita?', es:'¿Terminar la partida?' },
+  finish_confirm_body: { fr:"Vous passerez à l'écran de calcul des scores.", en:"You'll move to the scoring screen.", de:'Ihr wechselt zum Punkteberechnungs-Bildschirm.', it:'Passerai alla schermata di calcolo punteggio.', es:'Pasarás a la pantalla de cálculo de puntuación.' },
+  btn_confirm_finish: { fr:'🏁 Confirmer', en:'🏁 Confirm', de:'🏁 Bestätigen', it:'🏁 Conferma', es:'🏁 Confirmar' },
+
+  hint_text: { fr:"Ajoutez cette page à votre écran d'accueil pour un accès en un tap : bouton Partager (iPhone) ou menu ⋮ (Android) → « Sur l'écran d'accueil ».", en:'Add this page to your home screen for one-tap access: Share button (iPhone) or ⋮ menu (Android) → "Add to Home Screen".', de:'Fügt diese Seite eurem Startbildschirm hinzu für schnellen Zugriff: Teilen-Symbol (iPhone) oder Menü ⋮ (Android) → „Zum Home-Bildschirm".', it:'Aggiungi questa pagina alla schermata Home per un accesso rapido: pulsante Condividi (iPhone) o menu ⋮ (Android) → "Aggiungi a Home".', es:'Añade esta página a tu pantalla de inicio para un acceso directo: botón Compartir (iPhone) o menú ⋮ (Android) → "Añadir a pantalla de inicio".' },
+
+  offline_text: { fr:'Hors-ligne', en:'Offline', de:'Offline', it:'Offline', es:'Sin conexión' }
+};
+
+function t(key, vars){
+  var entry = I18N[key];
+  if (!entry) return key;
+  var str = entry[currentLang] || entry.fr;
+  if (vars){
+    Object.keys(vars).forEach(function(k){ str = str.split('{' + k + '}').join(vars[k]); });
+  }
+  return str;
+}
+
+function setLang(code){
+  if (LANGS.indexOf(code) === -1) return;
+  currentLang = code;
+  try { localStorage.setItem('tipperary_lang', code); } catch(e) {}
+  var badge = document.getElementById('offlineBadge');
+  if (badge) badge.textContent = t('offline_text');
+  document.documentElement.lang = code;
+  ui.showLangMenu = false;
+  render();
+}
+/* ---------- end i18n ---------- */
+
 var state = null;
 var undoStack = [];
-var ui = { showLog:false, showMenu:false, confirmReset:false, confirmFinish:false, setupPlayers:4 };
+var ui = { showLog:false, showMenu:false, showLangMenu:false, confirmReset:false, confirmFinish:false, setupPlayers:4 };
 
 function freshState(players){
   return {
@@ -246,7 +337,7 @@ function cancelReset(){ ui.confirmReset = false; render(); }
 function doReset(){
   try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
   state = null; undoStack = [];
-  ui = { showLog:false, showMenu:false, confirmReset:false, confirmFinish:false, setupPlayers:4 };
+  ui = { showLog:false, showMenu:false, showLangMenu:false, confirmReset:false, confirmFinish:false, setupPlayers:4 };
   render();
 }
 
@@ -269,52 +360,55 @@ function renderSetup(){
   return '' +
   '<div class="setup">' +
     '<div class="disp" style="font-size:1.7rem;font-weight:700;">Tipperary</div>' +
-    '<div style="color:var(--text-dim);font-size:.82rem;margin-top:.3rem;">Tirage virtuel des tuiles Paysage</div>' +
-    '<div style="margin-top:1.4rem;font-size:.82rem;color:var(--text-dim);">Nombre de joueurs</div>' +
+    '<div style="color:var(--text-dim);font-size:.82rem;margin-top:.3rem;">' + t('app_subtitle') + '</div>' +
+    '<div style="margin-top:.7rem;"><span onclick="toggle(\'showLangMenu\')" style="font-size:.72rem;color:var(--text-dim);cursor:pointer;text-decoration:underline;">🌐 ' + LANG_LABELS[currentLang] + '</span></div>' +
+    '<div style="margin-top:1.4rem;font-size:.82rem;color:var(--text-dim);">' + t('players_label') + '</div>' +
     '<div class="players-row">' + opts + '</div>' +
-    '<button class="btn btn-primary" style="width:100%;justify-content:center;padding:.7rem;" onclick="startGame(' + ui.setupPlayers + ')">Commencer la partie</button>' +
-    '<div style="margin-top:1rem;font-size:.7rem;color:var(--text-dim);">' + (ui.setupPlayers===5 ? '10 manches seront jouées.' : '12 manches seront jouées.') + ' Le numéro de chaque tuile est visible sur sa face illustrée (1 à 60).</div>' +
+    '<button class="btn btn-primary" style="width:100%;justify-content:center;padding:.7rem;" onclick="startGame(' + ui.setupPlayers + ')">' + t('start_btn') + '</button>' +
+    '<div style="margin-top:1rem;font-size:.7rem;color:var(--text-dim);">' + (ui.setupPlayers===5 ? t('rounds_5') : t('rounds_other')) + ' ' + t('tile_note') + '</div>' +
+    '<div style="margin-top:1rem;font-size:.65rem;color:var(--text-dim);opacity:.75;">' + t('disclaimer') + '</div>' +
   '</div>';
 }
 
 function renderFinish(){
   return '' +
   '<div class="finish">' +
-    '<h2 class="disp">Partie terminée</h2>' +
-    '<p style="color:var(--text-dim);font-size:.86rem;">Placez vos Tours restantes, puis comptez vos points dans le carnet de score :</p>' +
+    '<h2 class="disp">' + t('finish_title') + '</h2>' +
+    '<p style="color:var(--text-dim);font-size:.86rem;">' + t('finish_intro') + '</p>' +
     '<ul>' +
-      '<li><b>Terrain rectangulaire</b> — 1 PV par case du plus grand rectangle plein, sans case vide.</li>' +
-      '<li><b>Moutons</b> — 1 PV par mouton de votre plus grand troupeau, +5 PV pour le plus grand troupeau de la partie.</li>' +
-      '<li><b>Exploration</b> — 5 PV si votre Village est entièrement entouré de tuiles.</li>' +
-      '<li><b>Farine</b> — les PV indiqués sous votre Fût sur la piste de farine.</li>' +
-      '<li><b>Cercles de pierres</b> — la somme des valeurs de vos cercles de pierres.</li>' +
+      '<li><b>' + t('cat_rect_t') + '</b> — ' + t('cat_rect_d') + '</li>' +
+      '<li><b>' + t('cat_sheep_t') + '</b> — ' + t('cat_sheep_d') + '</li>' +
+      '<li><b>' + t('cat_explore_t') + '</b> — ' + t('cat_explore_d') + '</li>' +
+      '<li><b>' + t('cat_flour_t') + '</b> — ' + t('cat_flour_d') + '</li>' +
+      '<li><b>' + t('cat_stones_t') + '</b> — ' + t('cat_stones_d') + '</li>' +
     '</ul>' +
-    '<button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem;" onclick="requestReset()">Nouvelle partie</button>' +
+    '<button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem;" onclick="requestReset()">' + t('new_game_btn') + '</button>' +
+    '<div style="margin-top:.9rem;text-align:center;"><span onclick="toggle(\'showLangMenu\')" style="font-size:.72rem;color:var(--text-dim);cursor:pointer;text-decoration:underline;">🌐 ' + LANG_LABELS[currentLang] + '</span></div>' +
   '</div>';
 }
 
 function renderTopbar(){
   return '' +
   '<div class="topbar">' +
-    '<div class="topbar-title disp">Tipperary <span class="topbar-sub">— Partie à ' + state.players + ' joueurs</span></div>' +
+    '<div class="topbar-title disp">Tipperary <span class="topbar-sub">' + t('topbar_players', {n:state.players}) + '</span></div>' +
     '<div class="spacer"></div>' +
-    '<button class="icon-btn" onclick="toggle(\'showLog\')" title="Historique">☰</button>' +
-    '<button class="icon-btn" onclick="toggle(\'showMenu\')" title="Plus d\'options">⋯</button>' +
+    '<button class="icon-btn" onclick="toggle(\'showLog\')" title="' + t('title_history') + '">☰</button>' +
+    '<button class="icon-btn" onclick="toggle(\'showMenu\')" title="' + t('title_more') + '">⋯</button>' +
   '</div>';
 }
 
 function renderRoundAction(){
-  var roundLabel = 'Manche ' + state.round + '/' + state.totalRounds;
+  var roundLabel = t('round_word') + ' ' + state.round + '/' + state.totalRounds;
   if (state.round >= state.totalRounds){
-    return '<button class="btn round-advance-btn" disabled>' + roundLabel + ' (dernière) — terminez via ⋯ quand prêt</button>';
+    return '<button class="btn round-advance-btn" disabled>' + t('round_last', {round:roundLabel}) + '</button>';
   }
   var have = state.roundPlacements.count;
   var need = state.players;
   if (have !== need){
     var remaining = need - have;
-    return '<button class="btn round-advance-btn warn" disabled>' + roundLabel + ' — ⚠ ' + have + '/' + need + ' placée(s), encore ' + remaining + '</button>';
+    return '<button class="btn round-advance-btn warn" disabled>' + t('round_warn', {round:roundLabel, have:have, need:need, remaining:remaining}) + '</button>';
   }
-  return '<button class="btn btn-primary round-advance-btn" onclick="newRound()">' + roundLabel + ' — ▶ tirer les tuiles</button>';
+  return '<button class="btn btn-primary round-advance-btn" onclick="newRound()">' + t('round_ready', {round:roundLabel}) + '</button>';
 }
 
 function renderZones(){
@@ -323,7 +417,7 @@ function renderZones(){
   var cards = state.zones.map(function(tiles, zi){
     var zoneClosed = state.roundPlacements.zones[zi];
     var ticketsHTML = tiles.length === 0
-      ? '<div class="empty-slot">vide</div>'
+      ? '<div class="empty-slot">' + t('zone_empty') + '</div>'
       : tiles.map(function(t){
           var isNew = !!freshTiles[zi + ':' + t];
           var cls = 'ticket' + (isNew ? ' new' : '') + (zoneClosed ? ' locked' : '');
@@ -344,63 +438,87 @@ function renderModals(){
   var html = '';
   if (ui.showLog){
     var items = state.log.slice().reverse().map(function(e){
-      return '<div class="log-item">M' + e.round + ' · ' + ZONE_NAMES[e.zone] + ' · tuile n°' + e.tile + ' · ' + (e.action==='draw'?'tirée':'placée') + '</div>';
+      return '<div class="log-item">M' + e.round + ' · ' + ZONE_NAMES[e.zone] + ' · n°' + e.tile + ' · ' + (e.action==='draw' ? t('log_drawn') : t('log_placed')) + '</div>';
     }).join('');
     html += '' +
     '<div class="modal-backdrop"><div class="modal wide">' +
-      '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.5rem;">Historique</div>' +
-      '<div class="modal-log">' + (state.log.length===0 ? 'Aucun événement pour le moment.' : items) + '</div>' +
-      '<div class="modal-actions"><button class="btn btn-primary" onclick="toggle(\'showLog\')">Fermer</button></div>' +
+      '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.5rem;">' + t('title_history') + '</div>' +
+      '<div class="modal-log">' + (state.log.length===0 ? t('log_empty') : items) + '</div>' +
+      '<div class="modal-actions"><button class="btn btn-primary" onclick="toggle(\'showLog\')">' + t('btn_close') + '</button></div>' +
     '</div></div>';
   }
   if (ui.showMenu){
     html += '' +
     '<div class="modal-backdrop"><div class="modal">' +
-      '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.8rem;">Plus d\'options</div>' +
+      '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.8rem;">' + t('title_more') + '</div>' +
       '<div class="modal-menu-list">' +
-        '<button class="btn" onclick="toggle(\'showMenu\');handleUndo()" ' + (undoStack.length===0?'disabled':'') + '>↺ Annuler la dernière action</button>' +
-        '<button class="btn" onclick="toggle(\'showMenu\');requestFinish()">🏁 Terminer la partie</button>' +
-        '<button class="btn btn-danger" onclick="toggle(\'showMenu\');requestReset()">⟲ Nouvelle partie</button>' +
+        '<button class="btn" onclick="toggle(\'showMenu\');handleUndo()" ' + (undoStack.length===0?'disabled':'') + '>' + t('menu_undo') + '</button>' +
+        '<button class="btn" onclick="toggle(\'showMenu\');toggle(\'showLangMenu\')">🌐 ' + t('title_lang') + '</button>' +
+        '<button class="btn" onclick="toggle(\'showMenu\');requestFinish()">' + t('menu_finish') + '</button>' +
+        '<button class="btn btn-danger" onclick="toggle(\'showMenu\');requestReset()">' + t('menu_reset') + '</button>' +
       '</div>' +
-      '<div class="modal-actions"><button class="btn" onclick="toggle(\'showMenu\')">Fermer</button></div>' +
+      '<div class="modal-actions"><button class="btn" onclick="toggle(\'showMenu\')">' + t('btn_close') + '</button></div>' +
+    '</div></div>';
+  }
+  if (ui.showLangMenu){
+    var langBtns = LANGS.map(function(code){
+      return '<button class="btn' + (code===currentLang?' btn-primary':'') + '" onclick="setLang(\'' + code + '\')">' + LANG_FLAGS[code] + ' ' + LANG_LABELS[code] + '</button>';
+    }).join('');
+    html += '' +
+    '<div class="modal-backdrop"><div class="modal">' +
+      '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.8rem;">' + t('title_lang') + '</div>' +
+      '<div class="modal-menu-list">' + langBtns + '</div>' +
+      '<div class="modal-actions"><button class="btn" onclick="toggle(\'showLangMenu\')">' + t('btn_close') + '</button></div>' +
     '</div></div>';
   }
   if (ui.confirmReset){
     html += '' +
     '<div class="modal-backdrop"><div class="modal">' +
-      '<div class="disp" style="font-size:1.1rem;font-weight:700;">Nouvelle partie ?</div>' +
-      '<p>La partie en cours sera définitivement effacée.</p>' +
+      '<div class="disp" style="font-size:1.1rem;font-weight:700;">' + t('reset_title') + '</div>' +
+      '<p>' + t('reset_body') + '</p>' +
       '<div class="modal-actions">' +
-        '<button class="btn" onclick="cancelReset()">✕ Annuler</button>' +
-        '<button class="btn btn-danger" onclick="doReset()">⟲ Confirmer</button>' +
+        '<button class="btn" onclick="cancelReset()">' + t('btn_cancel') + '</button>' +
+        '<button class="btn btn-danger" onclick="doReset()">' + t('btn_confirm_reset') + '</button>' +
       '</div>' +
     '</div></div>';
   }
   if (ui.confirmFinish){
     html += '' +
     '<div class="modal-backdrop"><div class="modal">' +
-      '<div class="disp" style="font-size:1.1rem;font-weight:700;">Terminer la partie ?</div>' +
-      '<p>Vous passerez à l\'écran de calcul des scores.</p>' +
+      '<div class="disp" style="font-size:1.1rem;font-weight:700;">' + t('finish_confirm_title') + '</div>' +
+      '<p>' + t('finish_confirm_body') + '</p>' +
       '<div class="modal-actions">' +
-        '<button class="btn" onclick="cancelFinish()">✕ Annuler</button>' +
-        '<button class="btn btn-primary" onclick="doFinish()">🏁 Confirmer</button>' +
+        '<button class="btn" onclick="cancelFinish()">' + t('btn_cancel') + '</button>' +
+        '<button class="btn btn-primary" onclick="doFinish()">' + t('btn_confirm_finish') + '</button>' +
       '</div>' +
     '</div></div>';
   }
   return html;
 }
 
+var hintDismissed = false;
+try { hintDismissed = localStorage.getItem('tipperary_hint_seen') === '1'; } catch(e) {}
+function dismissHint(){
+  hintDismissed = true;
+  try { localStorage.setItem('tipperary_hint_seen', '1'); } catch(e) {}
+  render();
+}
+function renderHintBanner(){
+  if (hintDismissed) return '';
+  return '<div class="hint-banner">📲 ' + t('hint_text') + '<button class="hint-close" onclick="dismissHint()">✕</button></div>';
+}
+
 function render(){
   var app = document.getElementById('app');
   if (!state){
-    app.innerHTML = renderSetup() + renderModals();
+    app.innerHTML = renderHintBanner() + renderSetup() + renderModals();
     return;
   }
   if (state.finished){
-    app.innerHTML = renderFinish() + renderModals();
+    app.innerHTML = renderHintBanner() + renderFinish() + renderModals();
     return;
   }
-  app.innerHTML = renderTopbar() + renderRoundAction() + renderZones() + renderModals();
+  app.innerHTML = renderHintBanner() + renderTopbar() + renderRoundAction() + renderZones() + renderModals();
 }
 
 function normalizeState(s){
@@ -419,11 +537,14 @@ function normalizeState(s){
 
 // init
 state = normalizeState(load());
+document.documentElement.lang = currentLang;
 render();
 
 // offline badge
 function updateOnlineBadge(){
-  document.getElementById('offlineBadge').style.display = navigator.onLine ? 'none' : 'block';
+  var b = document.getElementById('offlineBadge');
+  b.textContent = t('offline_text');
+  b.style.display = navigator.onLine ? 'none' : 'block';
 }
 window.addEventListener('online', updateOnlineBadge);
 window.addEventListener('offline', updateOnlineBadge);
