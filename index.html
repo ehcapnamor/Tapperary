@@ -57,8 +57,9 @@
     border-radius:10px; padding:.5rem .55rem; display:flex; flex-direction:column; gap:.32rem; transition:opacity .15s; }
   .zone.closed{ opacity:.5; }
   .zone h3{ margin:0; font-family:var(--f-display); font-size:.78rem; font-weight:700; display:flex; align-items:center; gap:.32rem; }
-  .zone h3 .check{ margin-left:auto; color:var(--moss); font-size:.75rem; }
-  .dot{ width:8px; height:8px; border-radius:50%; background:var(--zc); flex-shrink:0; display:inline-block; }
+  .zone h3 .check{ margin-left:auto; color:var(--text-dim); font-size:.75rem; }
+  .zone-icon{ display:inline-flex; flex-shrink:0; }
+  .zi{ width:17px; height:19.1px; display:block; }
 
   .tickets{ display:flex; flex-direction:column; gap:.28rem; }
   .ticket{ display:flex; align-items:center; justify-content:space-between; gap:.35rem;
@@ -107,8 +108,16 @@
 
 var TOTAL_TILES = 60;
 var ZONE_COUNT = 5;
-var ZONE_COLORS = ['#7FA65E', '#D3A24C', '#8B7355', '#4A6B7A', '#9B9B8F'];
-var ZONE_NAMES = ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4', 'Zone 5'];
+var ZONE_COLORS = ['#3D6EA6', '#AEBCC6', '#3E8C52', '#E8C13A', '#C6522E'];
+var ZONE_NAMES = ['An Chathair', 'Béal an Átha', 'Fiodh Ard', 'Tiobraid Árann', 'Ros Cré'];
+var SHIELD_PATH = 'M2 2H22V13C22 18.2 17 22 12 24.5C7 22 2 18.2 2 13Z';
+var ZONE_ICONS = [
+  '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#3D6EA6"/><rect x="6" y="10" width="3" height="3" fill="#F3EEDC"/><rect x="10.5" y="7.3" width="3" height="5.7" fill="#F3EEDC"/><rect x="15" y="10" width="3" height="3" fill="#F3EEDC"/><rect x="6" y="13" width="12" height="5.3" fill="#F3EEDC"/><rect x="11.2" y="15.3" width="1.8" height="3" fill="#3D6EA6"/></svg>',
+  '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#AEBCC6"/><rect x="4.5" y="9.3" width="15" height="2.3" rx="0.7" fill="#2A2A22"/><rect x="6.3" y="11.8" width="1.7" height="5.2" fill="#2A2A22"/><rect x="16" y="11.8" width="1.7" height="5.2" fill="#2A2A22"/><rect x="11.15" y="11.8" width="1.7" height="6.4" fill="#2A2A22"/><path d="M5 19.5c1-.8 2-.8 3 0s2 .8 3 0 2-.8 3 0 2 .8 3 0 2-.8 3 0" stroke="#2A2A22" stroke-width="0.9" fill="none" stroke-linecap="round"/></svg>',
+  '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#3E8C52"/><rect x="10.7" y="14.2" width="2.6" height="6" rx="1" fill="#F3EEDC"/><circle cx="12" cy="9.6" r="6.1" fill="#F3EEDC"/></svg>',
+  '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#E8C13A"/><ellipse cx="12" cy="12.6" rx="5.3" ry="4.9" fill="#3A2712"/><path d="M6.3 8.3c-2.1-2.4-4.1-2.5-3.5.7.3 1.6 2.1 2.6 4 2.2.7-.2 1.1-.7 1-1.4-.1-.5-.6-.9-1.5-1.5z" fill="#3A2712"/><path d="M17.7 8.3c2.1-2.4 4.1-2.5 3.5.7-.3 1.6-2.1 2.6-4 2.2-.7-.2-1.1-.7-1-1.4.1-.5.6-.9 1.5-1.5z" fill="#3A2712"/><circle cx="9.9" cy="12.1" r=".95" fill="#E8C13A"/><circle cx="14.1" cy="12.1" r=".95" fill="#E8C13A"/></svg>',
+  '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#C6522E"/><path d="M9.3 3.2H14.7L13.2 22H10.8Z" fill="#EAC24C"/><circle cx="12" cy="11.6" r="4.3" fill="none" stroke="#EAC24C" stroke-width="2.1"/></svg>'
+];
 var STORAGE_KEY = 'tipperary_state_v1';
 
 var state = null;
@@ -307,7 +316,7 @@ function renderZones(){
         }).join('');
     return '' +
     '<div class="zone' + (zoneClosed ? ' closed' : '') + '" style="--zc:' + ZONE_COLORS[zi] + '">' +
-      '<h3><span class="dot"></span>' + ZONE_NAMES[zi] + (zoneClosed ? '<span class="check">✓</span>' : '') + '</h3>' +
+      '<h3><span class="zone-icon">' + ZONE_ICONS[zi] + '</span>' + ZONE_NAMES[zi] + (zoneClosed ? '<span class="check">✓</span>' : '') + '</h3>' +
       '<div class="tickets">' + ticketsHTML + '</div>' +
     '</div>';
   }).join('');
