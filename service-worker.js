@@ -1,11 +1,12 @@
-var CACHE_NAME = 'tipperary-cache-v23';
+var CACHE_NAME = 'tipperary-cache-v24';
 var ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './icon-180.png'
+  './icon-180.png',
+  './bg.svg'
 ];
 
 self.addEventListener('install', function(event){

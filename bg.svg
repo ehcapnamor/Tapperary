@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1400" viewBox="0 0 800 1400">
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="12%" r="90%">
+      <stop offset="0%" stop-color="#2B342C"/>
+      <stop offset="55%" stop-color="#1E2420"/>
+      <stop offset="100%" stop-color="#12160F"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="1400" fill="url(#sky)"/>
+
+  <!-- far hills -->
+  <path d="M 0,1400 L 0,980 Q 70,900 140,930 Q 230,900 320,960 Q 410,870 500,900 Q 590,870 680,950 Q 740,890 800,920 L 800,1400 Z" fill="#232C25" opacity="0.55"/>
+
+  <!-- river -->
+  <path d="M -20,1060 C 150,1020 220,1090 380,1050 C 520,1015 600,1075 830,1030" fill="none" stroke="#3E5560" stroke-width="7" opacity="0.35" stroke-linecap="round"/>
+  <path d="M -20,1080 C 150,1040 220,1110 380,1070 C 520,1035 600,1095 830,1050" fill="none" stroke="#3E5560" stroke-width="4" opacity="0.25" stroke-linecap="round"/>
+
+  <!-- mid hills + tower -->
+  <path d="M 0,1400 L 0,1080 Q 90,980 180,1010 Q 280,980 380,1060 Q 470,960 560,990 Q 680,960 800,1040 L 800,1400 Z" fill="#1C2420" opacity="0.75"/>
+  
+    <g transform="translate(430,1010)">
+      <path d="M -15.75,0 L -13.3875,-99.75 Q 0,-127.05 13.3875,-99.75 L 15.75,0 Z" fill="#232C25"/>
+      <rect x="-4.41" y="-41.894999999999996" width="8.82" height="21.945" fill="#1A211C"/>
+    </g>
+
+  <!-- sheep grazing on mid hill -->
+  
+    <g transform="translate(260,1195)">
+      <ellipse cx="0" cy="0" rx="9.0" ry="6.0" fill="#2E372F"/>
+      <circle cx="-9.0" cy="1.0" r="3.6" fill="#2E372F"/>
+    </g>
+    <g transform="translate(290,1205)">
+      <ellipse cx="0" cy="0" rx="8.1" ry="5.4" fill="#2E372F"/>
+      <circle cx="-8.1" cy="0.9" r="3.24" fill="#2E372F"/>
+    </g>
+    <g transform="translate(230,1210)">
+      <ellipse cx="0" cy="0" rx="7.2" ry="4.800000000000001" fill="#2E372F"/>
+      <circle cx="-7.2" cy="0.8" r="2.8800000000000003" fill="#2E372F"/>
+    </g>
+    <g transform="translate(500,1150)">
+      <ellipse cx="0" cy="0" rx="7.6499999999999995" ry="5.1" fill="#2E372F"/>
+      <circle cx="-7.6499999999999995" cy="0.85" r="3.06" fill="#2E372F"/>
+    </g>
+    <g transform="translate(530,1160)">
+      <ellipse cx="0" cy="0" rx="6.3" ry="4.199999999999999" fill="#2E372F"/>
+      <circle cx="-6.3" cy="0.7" r="2.52" fill="#2E372F"/>
+    </g>
+
+  <!-- near hills + trees -->
+  <path d="M 0,1400 L 0,1220 Q 80,1110 160,1140 Q 260,1110 360,1200 Q 460,1090 560,1120 Q 680,1090 800,1190 L 800,1400 Z" fill="#141A16"/>
+  
+    <g transform="translate(120,1210)">
+      <rect x="-2.6" y="0" width="5.2" height="18.2" fill="#1E2620"/>
+      <ellipse cx="0" cy="-7.800000000000001" rx="14.3" ry="20.8" fill="#1E2620"/>
+      <ellipse cx="0" cy="-20.8" rx="10.4" ry="15.600000000000001" fill="#1E2620"/>
+    </g>
+    <g transform="translate(150,1225)">
+      <rect x="-2.0" y="0" width="4.0" height="14.0" fill="#1E2620"/>
+      <ellipse cx="0" cy="-6.0" rx="11.0" ry="16.0" fill="#1E2620"/>
+      <ellipse cx="0" cy="-16.0" rx="8.0" ry="12.0" fill="#1E2620"/>
+    </g>
+    <g transform="translate(660,1180)">
+      <rect x="-2.4" y="0" width="4.8" height="16.8" fill="#1E2620"/>
+      <ellipse cx="0" cy="-7.199999999999999" rx="13.2" ry="19.2" fill="#1E2620"/>
+      <ellipse cx="0" cy="-19.2" rx="9.6" ry="14.399999999999999" fill="#1E2620"/>
+    </g>
+    <g transform="translate(700,1200)">
+      <rect x="-1.8" y="0" width="3.6" height="12.6" fill="#1E2620"/>
+      <ellipse cx="0" cy="-5.4" rx="9.9" ry="14.4" fill="#1E2620"/>
+      <ellipse cx="0" cy="-14.4" rx="7.2" ry="10.8" fill="#1E2620"/>
+    </g>
+    <g transform="translate(60,1235)">
+      <rect x="-1.8" y="0" width="3.6" height="12.6" fill="#1E2620"/>
+      <ellipse cx="0" cy="-5.4" rx="9.9" ry="14.4" fill="#1E2620"/>
+      <ellipse cx="0" cy="-14.4" rx="7.2" ry="10.8" fill="#1E2620"/>
+    </g>
+</svg>

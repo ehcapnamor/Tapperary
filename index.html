@@ -29,7 +29,8 @@
   }
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--f-body); height:100%; }
-  body{ padding:clamp(.22rem,0.85dvh,.6rem); -webkit-tap-highlight-color:transparent; }
+  body{ padding:clamp(.22rem,0.85dvh,.6rem); -webkit-tap-highlight-color:transparent;
+    background: url('bg.svg') center top / cover no-repeat, var(--bg); background-attachment: scroll; }
   .wrap{ max-width:820px; margin:0 auto; }
   .disp{ font-family:var(--f-display); }
   .mono{ font-family:var(--f-mono); }
@@ -57,7 +58,7 @@
 
   .zones{ display:flex; flex-direction:column; gap:clamp(.22rem,0.72dvh,.75rem); }
 
-  .zone{ background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--zc);
+  .zone{ background:rgba(38,46,41,0.93); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); border:1px solid var(--line); border-left:5px solid var(--zc);
     border-radius:12px; padding:clamp(.32rem,0.79dvh,.7rem) clamp(.4rem,0.94dvh,.8rem); display:flex; flex-direction:column; gap:clamp(.15rem,0.5dvh,.5rem); transition:opacity .15s; }
   .zone.closed{ opacity:.62; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .zone.closed:active{ opacity:.8; }
@@ -67,14 +68,14 @@
   .zi{ width:clamp(16px,3.24dvh,24px); height:clamp(18px,3.6dvh,27px); display:block; }
 
   .tickets{ display:flex; flex-direction:row; gap:.55rem; }
-  .ticket{ flex:1; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  .ticket{ flex:1; position:relative; display:flex; flex-direction:row; align-items:center; justify-content:center;
     background:linear-gradient(180deg,#F4EEDC,#E7DDC0); color:#2A2920; border-radius:10px;
-    padding:clamp(.28rem,0.72dvh,.7rem) clamp(.28rem,0.65dvh,.5rem); gap:clamp(.08rem,0.29dvh,.3rem); box-shadow:0 2px 0 rgba(0,0,0,.28); border:1px solid rgba(0,0,0,.15);
+    padding:clamp(.35rem,0.9dvh,.75rem) clamp(.3rem,0.75dvh,.55rem); gap:clamp(.35rem,1dvh,.6rem); box-shadow:0 2px 0 rgba(0,0,0,.28); border:1px solid rgba(0,0,0,.15);
     cursor:pointer; text-align:center; -webkit-tap-highlight-color:transparent; user-select:none; }
   .ticket:active{ filter:brightness(.92); }
   .ticket .n{ font-family:var(--f-mono); font-weight:800; font-size:clamp(.95rem,2.3dvh,1.4rem); }
-  .piece-shape{ display:flex; align-items:center; justify-content:center; min-height:clamp(14px,2.59dvh,29px); }
-  .piece-shape-svg{ display:block; height:clamp(14px,2.59dvh,27px); width:auto; }
+  .piece-shape{ display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .piece-shape-svg{ display:block; height:clamp(26px,6.5dvh,44px); width:auto; }
   .piece-shape-svg rect{ fill:#5E6E48; }
   .ticket.new .piece-shape-svg rect{ fill:#6B4B1E; }
   .ticket.locked{ cursor:not-allowed; opacity:.4; }
@@ -126,15 +127,15 @@
 
 var TOTAL_TILES = 60;
 var ZONE_COUNT = 5;
-var ZONE_COLORS = ['#3D6EA6', '#AEBCC6', '#3E8C52', '#E8C13A', '#C6522E'];
-var ZONE_NAMES = ['An Chathair', 'Béal an Átha', 'Fiodh Ard', 'Tjobraid Árann', 'Ros Cré'];
+var ZONE_COLORS = ['#3D6EA6', '#AEBCC6', '#C6522E', '#E8C13A', '#3E8C52'];
+var ZONE_NAMES = ['An Chathair', 'Béal an Átha', 'Ros Cré', 'Tjobraid Árann', 'Fiodh Ard'];
 var SHIELD_PATH = 'M2 2H22V13C22 18.2 17 22 12 24.5C7 22 2 18.2 2 13Z';
 var ZONE_ICONS = [
   '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#3D6EA6"/><rect x="6" y="10" width="3" height="3" fill="#F3EEDC"/><rect x="10.5" y="7.3" width="3" height="5.7" fill="#F3EEDC"/><rect x="15" y="10" width="3" height="3" fill="#F3EEDC"/><rect x="6" y="13" width="12" height="5.3" fill="#F3EEDC"/><rect x="11.2" y="15.3" width="1.8" height="3" fill="#3D6EA6"/></svg>',
   '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#AEBCC6"/><rect x="4.5" y="9.3" width="15" height="2.3" rx="0.7" fill="#2A2A22"/><rect x="6.3" y="11.8" width="1.7" height="5.2" fill="#2A2A22"/><rect x="16" y="11.8" width="1.7" height="5.2" fill="#2A2A22"/><rect x="11.15" y="11.8" width="1.7" height="6.4" fill="#2A2A22"/><path d="M5 19.5c1-.8 2-.8 3 0s2 .8 3 0 2-.8 3 0 2 .8 3 0 2-.8 3 0" stroke="#2A2A22" stroke-width="0.9" fill="none" stroke-linecap="round"/></svg>',
-  '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#3E8C52"/><rect x="10.7" y="14.2" width="2.6" height="6" rx="1" fill="#F3EEDC"/><circle cx="12" cy="9.6" r="6.1" fill="#F3EEDC"/></svg>',
+  '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#C6522E"/><path d="M9.3 3.2H14.7L13.2 22H10.8Z" fill="#EAC24C"/><circle cx="12" cy="11.6" r="4.3" fill="none" stroke="#EAC24C" stroke-width="2.1"/></svg>',
   '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#E8C13A"/><ellipse cx="12" cy="12.6" rx="5.3" ry="4.9" fill="#3A2712"/><path d="M6.3 8.3c-2.1-2.4-4.1-2.5-3.5.7.3 1.6 2.1 2.6 4 2.2.7-.2 1.1-.7 1-1.4-.1-.5-.6-.9-1.5-1.5z" fill="#3A2712"/><path d="M17.7 8.3c2.1-2.4 4.1-2.5 3.5.7-.3 1.6-2.1 2.6-4 2.2-.7-.2-1.1-.7-1-1.4.1-.5.6-.9 1.5-1.5z" fill="#3A2712"/><circle cx="9.9" cy="12.1" r=".95" fill="#E8C13A"/><circle cx="14.1" cy="12.1" r=".95" fill="#E8C13A"/></svg>',
-  '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#C6522E"/><path d="M9.3 3.2H14.7L13.2 22H10.8Z" fill="#EAC24C"/><circle cx="12" cy="11.6" r="4.3" fill="none" stroke="#EAC24C" stroke-width="2.1"/></svg>'
+  '<svg viewBox="0 0 24 27" class="zi"><path d="' + SHIELD_PATH + '" fill="#3E8C52"/><rect x="10.7" y="14.2" width="2.6" height="6" rx="1" fill="#F3EEDC"/><circle cx="12" cy="9.6" r="6.1" fill="#F3EEDC"/></svg>'
 ];
 var STORAGE_KEY = 'tipperary_state_v1';
 
@@ -146,17 +147,19 @@ var FEEDBACK_ENDPOINT = 'https://tipperary-feedback.romanpache.workers.dev/';
 /* ---------- Formes des 60 tuiles Paysage (silhouettes schématiques) ---------- */
 var PIECE_SHAPES = {1:[[0,0],[0,1],[0,2]],2:[[0,0],[0,2],[1,0],[1,1],[1,2]],3:[[0,0],[1,0],[1,1]],4:[[0,0],[1,0],[1,1],[1,2]],5:[[0,0],[0,1],[1,1],[1,2],[1,3],[1,4],[2,1]],6:[[0,1],[1,0],[1,1],[1,2],[2,1]],7:[[0,0],[0,1]],8:[[0,0],[0,1],[0,2]],9:[[0,1],[1,0],[1,1],[1,2]],10:[[0,0],[0,1],[0,2]],11:[[0,0],[0,3],[1,0],[1,1],[1,2],[1,3]],12:[[0,1],[1,0],[1,1],[1,2],[2,1]],13:[[0,3],[1,0],[1,1],[1,2],[1,3],[2,1]],14:[[0,0],[0,2],[1,0],[1,1],[1,2],[2,2]],15:[[0,1],[0,2],[1,0],[1,1]],16:[[0,1],[1,0],[1,1]],17:[[0,0],[1,0],[1,1],[1,2],[2,1]],18:[[0,0],[0,2],[1,0],[1,1],[1,2],[2,0],[2,2]],19:[[0,0],[0,1]],20:[[0,0],[0,1],[1,0]],21:[[0,0],[1,0],[2,0],[2,1],[2,2]],22:[[0,2],[0,3],[1,0],[1,1],[1,2],[1,3]],23:[[0,0],[0,1],[0,2],[1,0],[1,1],[2,0]],24:[[0,0],[0,1],[0,2],[1,2],[1,3]],25:[[0,2],[1,0],[1,1],[1,2],[2,0]],26:[[0,0],[1,0],[2,0],[2,1],[2,2]],27:[[0,0],[0,1],[0,2],[0,3],[1,1],[2,1]],28:[[0,1],[0,2],[1,0],[1,1],[2,1]],29:[[0,1],[0,2],[1,0],[1,1],[1,2],[2,2]],30:[[0,0],[0,1],[0,2],[1,0]],31:[[0,0],[0,2],[1,0],[1,1],[1,2],[1,3]],32:[[0,2],[0,3],[0,4],[1,0],[1,1],[1,2]],33:[[0,0],[0,1],[0,2],[0,3]],34:[[0,1],[1,0],[1,1],[1,2]],35:[[0,0],[0,1],[1,1],[2,1],[2,2],[2,3]],36:[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]],37:[[0,1],[1,0],[1,1]],38:[[0,1],[1,0],[1,1],[1,2]],39:[[0,2],[1,0],[1,1],[1,2],[2,0],[2,1]],40:[[0,0],[0,1],[0,2],[1,0],[1,2],[1,3]],41:[[0,0],[0,1],[0,2],[1,0],[1,2],[1,3]],42:[[0,0],[0,1],[0,2],[0,3],[1,1],[1,2]],43:[[0,0],[0,1],[0,2],[1,0],[1,2],[1,3]],44:[[0,2],[1,0],[1,1],[1,2],[1,3]],45:[[0,1],[0,2],[1,0],[1,1],[1,2]],46:[[0,1],[0,2],[1,0],[1,1],[1,2]],47:[[0,1],[1,0],[1,1],[1,2],[1,3]],48:[[0,0],[1,0],[1,1],[1,2],[1,3],[2,0]],49:[[0,0],[0,1],[1,0],[1,1]],50:[[0,0],[0,1],[0,2]],51:[[0,0],[1,0],[1,1]],52:[[0,0],[1,0],[1,1]],53:[[0,1],[0,2],[1,0],[1,1]],54:[[0,1],[1,0],[1,1],[1,2]],55:[[0,1],[1,0],[1,1],[1,2],[1,3]],56:[[0,0],[1,0],[1,1]],57:[[0,1],[1,0],[1,1],[1,2],[2,1]],58:[[0,0],[0,1],[0,2]],59:[[0,0],[0,1],[0,2]],60:[[0,0],[1,0],[1,1]]};
 
+var PIECE_FRAME = 5; // plus grande dimension (lignes ou colonnes) parmi les 60 pièces : cadre fixe commun à toutes les icônes
 function pieceShapeSVG(num){
   var cells = PIECE_SHAPES[num];
   if (!cells || !cells.length) return '';
   var maxR = 0, maxC = 0;
   cells.forEach(function(p){ if (p[0] > maxR) maxR = p[0]; if (p[1] > maxC) maxC = p[1]; });
-  var cols = maxC + 1, rows = maxR + 1;
+  var rows = maxR + 1, cols = maxC + 1;
+  var offR = (PIECE_FRAME - rows) / 2, offC = (PIECE_FRAME - cols) / 2; // centre la pièce dans le cadre commun
   var cellPx = 9, pad = 0.12, size = 1 - 2 * pad;
   var rects = cells.map(function(p){
-    return '<rect x="' + (p[1] + pad) + '" y="' + (p[0] + pad) + '" width="' + size + '" height="' + size + '" rx="0.16"/>';
+    return '<rect x="' + (p[1] + offC + pad) + '" y="' + (p[0] + offR + pad) + '" width="' + size + '" height="' + size + '" rx="0.16"/>';
   }).join('');
-  return '<svg class="piece-shape-svg" viewBox="0 0 ' + cols + ' ' + rows + '" width="' + (cols * cellPx) + '" height="' + (rows * cellPx) + '" aria-hidden="true">' + rects + '</svg>';
+  return '<svg class="piece-shape-svg" viewBox="0 0 ' + PIECE_FRAME + ' ' + PIECE_FRAME + '" width="' + (PIECE_FRAME * cellPx) + '" height="' + (PIECE_FRAME * cellPx) + '" aria-hidden="true">' + rects + '</svg>';
 }
 
 /* ---------- i18n ---------- */
