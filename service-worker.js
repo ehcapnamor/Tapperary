@@ -1,4 +1,4 @@
-var CACHE_NAME = 'tipperary-cache-v5';
+var CACHE_NAME = 'tipperary-cache-v8';
 var ASSETS = [
   './',
   './index.html',
