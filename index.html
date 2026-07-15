@@ -113,7 +113,8 @@
 
   .hint-banner{ display:flex; align-items:center; gap:.6rem; background:var(--surface-2); border:1px solid var(--wheat);
     border-radius:10px; padding:clamp(.3rem,0.72dvh,.6rem) clamp(.4rem,0.86dvh,.7rem); margin-bottom:clamp(.22rem,0.72dvh,.6rem); font-size:clamp(.72rem,1.44dvh,.8rem); line-height:1.35; color:var(--text); }
-  .hint-close{ margin-left:auto; background:none; border:none; color:var(--text-dim); font-size:1rem; cursor:pointer; padding:.15rem; flex-shrink:0; }
+  .hint-close{ margin-left:.3rem; background:none; border:none; color:var(--text-dim); font-size:1rem; cursor:pointer; padding:.15rem; flex-shrink:0; }
+  .hint-install-btn{ margin-left:auto; flex-shrink:0; padding:.35rem .7rem; font-size:.78rem; }
 </style>
 </head>
 <body>
@@ -223,6 +224,11 @@ var I18N = {
   btn_confirm_finish: { fr:'🏁 Confirmer', en:'🏁 Confirm', de:'🏁 Bestätigen', it:'🏁 Conferma', es:'🏁 Confirmar' },
 
   hint_text: { fr:"Ajoutez cette page à votre écran d'accueil pour un accès en un tap : bouton Partager (iPhone) ou menu ⋮ (Android) → « Sur l'écran d'accueil ».", en:'Add this page to your home screen for one-tap access: Share button (iPhone) or ⋮ menu (Android) → "Add to Home Screen".', de:'Fügt diese Seite eurem Startbildschirm hinzu für schnellen Zugriff: Teilen-Symbol (iPhone) oder Menü ⋮ (Android) → „Zum Home-Bildschirm".', it:'Aggiungi questa pagina alla schermata Home per un accesso rapido: pulsante Condividi (iPhone) o menu ⋮ (Android) → "Aggiungi a Home".', es:'Añade esta página a tu pantalla de inicio para un acceso directo: botón Compartir (iPhone) o menú ⋮ (Android) → "Añadir a pantalla de inicio".' },
+  hint_text_ready: { fr:"Installez l'application pour un accès en un tap, sans passer par le navigateur.", en:'Install the app for one-tap access, without going through the browser.', de:'Installiert die App für schnellen Zugriff ohne Browser-Umweg.', it:"Installa l'app per un accesso rapido, senza passare dal browser.", es:'Instala la aplicación para un acceso directo, sin pasar por el navegador.' },
+  hint_install_btn: { fr:'Installer', en:'Install', de:'Installieren', it:'Installa', es:'Instalar' },
+  menu_install: { fr:"📲 Installer l'application", en:'📲 Install the app', de:'📲 App installieren', it:"📲 Installa l'app", es:'📲 Instalar la aplicación' },
+  install_help_ios: { fr:"Appuyez sur le bouton Partager (le carré avec une flèche vers le haut, en bas de Safari), puis choisissez « Sur l'écran d'accueil ». C'est la seule façon d'installer une app depuis Safari — Apple ne permet pas de le faire automatiquement.", en:'Tap the Share button (the square with an arrow, at the bottom of Safari), then choose "Add to Home Screen". This is the only way to install an app from Safari — Apple does not allow doing this automatically.', de:'Tippt auf das Teilen-Symbol (das Quadrat mit Pfeil, unten in Safari) und wählt „Zum Home-Bildschirm". Das ist der einzige Weg, eine App aus Safari zu installieren — Apple erlaubt keine automatische Installation.', it:'Tocca il pulsante Condividi (il quadrato con la freccia, in basso in Safari), poi scegli "Aggiungi a Home". Questo è il solo modo per installare un app da Safari: Apple non consente di farlo automaticamente.', es:'Toca el botón Compartir (el cuadrado con una flecha, en la parte inferior de Safari) y elige "Añadir a pantalla de inicio". Es la única forma de instalar una app desde Safari — Apple no permite hacerlo automáticamente.' },
+  install_help_other: { fr:"Ouvrez le menu de votre navigateur (généralement ⋮ ou ⋯, en haut ou en bas de l'écran), puis choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».", en:'Open your browser menu (usually ⋮ or ⋯, at the top or bottom of the screen), then choose "Install app" or "Add to Home Screen".', de:'Öffnet das Menü eures Browsers (meist ⋮ oder ⋯, oben oder unten am Bildschirm) und wählt „App installieren" oder „Zum Home-Bildschirm".', it:'Apri il menu del browser (di solito ⋮ o ⋯, in alto o in basso nello schermo), poi scegli "Installa app" o "Aggiungi a Home".', es:'Abre el menú de tu navegador (normalmente ⋮ o ⋯, arriba o abajo de la pantalla) y elige "Instalar aplicación" o "Añadir a pantalla de inicio".' },
 
   offline_text: { fr:'Hors-ligne', en:'Offline', de:'Offline', it:'Offline', es:'Sin conexión' }
 };
@@ -251,7 +257,7 @@ function setLang(code){
 
 var state = null;
 var undoStack = [];
-var ui = { showMenu:false, showLangMenu:false, showFeedback:false, feedbackStatus:'idle', confirmReset:false, confirmFinish:false, setupPlayers:4 };
+var ui = { showMenu:false, showLangMenu:false, showFeedback:false, feedbackStatus:'idle', showInstallHelp:false, confirmReset:false, confirmFinish:false, setupPlayers:4 };
 
 function freshState(players){
   return {
@@ -376,7 +382,7 @@ function cancelReset(){ ui.confirmReset = false; render(); }
 function doReset(){
   try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
   state = null; undoStack = [];
-  ui = { showMenu:false, showLangMenu:false, showFeedback:false, feedbackStatus:'idle', confirmReset:false, confirmFinish:false, setupPlayers:4 };
+  ui = { showMenu:false, showLangMenu:false, showFeedback:false, feedbackStatus:'idle', showInstallHelp:false, confirmReset:false, confirmFinish:false, setupPlayers:4 };
   render();
 }
 
@@ -516,6 +522,7 @@ function renderModals(){
       '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.8rem;">' + t('title_more') + '</div>' +
       '<div class="modal-menu-list">' +
         '<button class="btn" onclick="toggle(\'showMenu\');handleUndo()" ' + (undoStack.length===0?'disabled':'') + '>' + t('menu_undo') + '</button>' +
+        (isStandaloneApp ? '' : '<button class="btn" onclick="toggle(\'showMenu\');installApp()">' + t('menu_install') + '</button>') +
         '<button class="btn" onclick="toggle(\'showMenu\');toggle(\'showLangMenu\')">🌐 ' + t('title_lang') + '</button>' +
         '<button class="btn" onclick="toggle(\'showMenu\');openFeedback()">' + t('menu_feedback') + '</button>' +
         '<button class="btn" onclick="toggle(\'showMenu\');requestFinish()">' + t('menu_finish') + '</button>' +
@@ -533,6 +540,14 @@ function renderModals(){
       '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.8rem;">' + t('title_lang') + '</div>' +
       '<div class="modal-menu-list">' + langBtns + '</div>' +
       '<div class="modal-actions"><button class="btn" onclick="toggle(\'showLangMenu\')">' + t('btn_close') + '</button></div>' +
+    '</div></div>';
+  }
+  if (ui.showInstallHelp){
+    html += '' +
+    '<div class="modal-backdrop"><div class="modal">' +
+      '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.6rem;">' + t('menu_install') + '</div>' +
+      '<p>' + (isIOSDevice ? t('install_help_ios') : t('install_help_other')) + '</p>' +
+      '<div class="modal-actions"><button class="btn btn-primary" onclick="toggle(\'showInstallHelp\')">' + t('btn_close') + '</button></div>' +
     '</div></div>';
   }
   if (ui.showFeedback){
@@ -591,8 +606,42 @@ function dismissHint(){
   try { localStorage.setItem('tipperary_hint_seen', '1'); } catch(e) {}
   render();
 }
+
+/* ---------- Installation de l'app (PWA) ---------- */
+var deferredInstallPrompt = null;
+var isStandaloneApp = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+var isIOSDevice = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  render();
+});
+window.addEventListener('appinstalled', function(){
+  deferredInstallPrompt = null;
+  isStandaloneApp = true;
+  render();
+});
+
+function installApp(){
+  if (deferredInstallPrompt){
+    var promptEvent = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    promptEvent.prompt();
+    promptEvent.userChoice.then(function(){ render(); });
+  } else {
+    ui.showInstallHelp = true;
+    render();
+  }
+}
+
 function renderHintBanner(){
-  if (hintDismissed) return '';
+  if (hintDismissed || isStandaloneApp) return '';
+  if (deferredInstallPrompt){
+    return '<div class="hint-banner">📲 ' + t('hint_text_ready') +
+      '<button class="btn btn-primary hint-install-btn" onclick="installApp()">' + t('hint_install_btn') + '</button>' +
+      '<button class="hint-close" onclick="dismissHint()">✕</button></div>';
+  }
   return '<div class="hint-banner">📲 ' + t('hint_text') + '<button class="hint-close" onclick="dismissHint()">✕</button></div>';
 }
 
