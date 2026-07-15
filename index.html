@@ -53,9 +53,10 @@
 
   .zone{ background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--zc);
     border-radius:12px; padding:.7rem .8rem; display:flex; flex-direction:column; gap:.5rem; transition:opacity .15s; }
-  .zone.closed{ opacity:.5; }
+  .zone.closed{ opacity:.62; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .zone.closed:active{ opacity:.8; }
   .zone h3{ margin:0; font-family:var(--f-display); font-size:1.05rem; font-weight:700; display:flex; align-items:center; gap:.5rem; }
-  .zone h3 .check{ margin-left:auto; color:var(--text-dim); font-size:.85rem; }
+  .zone h3 .check{ margin-left:auto; color:var(--text); font-size:1rem; opacity:.85; }
   .zone-icon{ display:inline-flex; flex-shrink:0; }
   .zi{ width:24px; height:27px; display:block; }
 
@@ -221,6 +222,25 @@ function handlePlace(zoneIdx, tile){
   save(); render();
 }
 
+function cancelPlacement(zoneIdx){
+  if (!state.roundPlacements.zones[zoneIdx]) return;
+  var idx = -1;
+  for (var i = state.log.length - 1; i >= 0; i--){
+    if (state.log[i].action === 'place' && state.log[i].zone === zoneIdx && state.log[i].round === state.round){ idx = i; break; }
+  }
+  if (idx === -1) return;
+  pushUndo();
+  var tile = state.log[idx].tile;
+  var newLog = state.log.slice(0, idx).concat(state.log.slice(idx + 1));
+  var newZones = state.zones.map(function(z, i){ return i === zoneIdx ? z.concat([tile]) : z; });
+  var newPlacements = {
+    count: state.roundPlacements.count - 1,
+    zones: state.roundPlacements.zones.map(function(v, i){ return i === zoneIdx ? false : v; })
+  };
+  state = Object.assign({}, state, { zones: newZones, log: newLog, roundPlacements: newPlacements });
+  save(); render();
+}
+
 function requestReset(){ ui.confirmReset = true; render(); }
 function cancelReset(){ ui.confirmReset = false; render(); }
 function doReset(){
@@ -278,7 +298,6 @@ function renderTopbar(){
   '<div class="topbar">' +
     '<div class="topbar-title disp">Tipperary <span class="topbar-sub">— Partie à ' + state.players + ' joueurs</span></div>' +
     '<div class="spacer"></div>' +
-    '<button class="icon-btn" onclick="handleUndo()" ' + (undoStack.length===0?'disabled':'') + ' title="Annuler">↺</button>' +
     '<button class="icon-btn" onclick="toggle(\'showLog\')" title="Historique">☰</button>' +
     '<button class="icon-btn" onclick="toggle(\'showMenu\')" title="Plus d\'options">⋯</button>' +
   '</div>';
@@ -313,8 +332,8 @@ function renderZones(){
           return '<div class="' + cls + '"' + tap + '><span class="n">n°' + t + '</span>' + sub + '</div>';
         }).join('');
     return '' +
-    '<div class="zone' + (zoneClosed ? ' closed' : '') + '" style="--zc:' + ZONE_COLORS[zi] + '">' +
-      '<h3><span class="zone-icon">' + ZONE_ICONS[zi] + '</span>' + ZONE_NAMES[zi] + (zoneClosed ? '<span class="check">✓</span>' : '') + '</h3>' +
+    '<div class="zone' + (zoneClosed ? ' closed' : '') + '" style="--zc:' + ZONE_COLORS[zi] + '"' + (zoneClosed ? ' onclick="cancelPlacement(' + zi + ')"' : '') + '>' +
+      '<h3><span class="zone-icon">' + ZONE_ICONS[zi] + '</span>' + ZONE_NAMES[zi] + (zoneClosed ? '<span class="check">↺</span>' : '') + '</h3>' +
       '<div class="tickets">' + ticketsHTML + '</div>' +
     '</div>';
   }).join('');
@@ -339,6 +358,7 @@ function renderModals(){
     '<div class="modal-backdrop"><div class="modal">' +
       '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.8rem;">Plus d\'options</div>' +
       '<div class="modal-menu-list">' +
+        '<button class="btn" onclick="toggle(\'showMenu\');handleUndo()" ' + (undoStack.length===0?'disabled':'') + '>↺ Annuler la dernière action</button>' +
         '<button class="btn" onclick="toggle(\'showMenu\');requestFinish()">🏁 Terminer la partie</button>' +
         '<button class="btn btn-danger" onclick="toggle(\'showMenu\');requestReset()">⟲ Nouvelle partie</button>' +
       '</div>' +
