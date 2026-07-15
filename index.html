@@ -61,12 +61,16 @@
   .zi{ width:24px; height:27px; display:block; }
 
   .tickets{ display:flex; flex-direction:row; gap:.55rem; }
-  .ticket{ flex:1; position:relative; display:flex; align-items:center; justify-content:center;
+  .ticket{ flex:1; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
     background:linear-gradient(180deg,#F4EEDC,#E7DDC0); color:#2A2920; border-radius:10px;
-    padding:.85rem .5rem; box-shadow:0 2px 0 rgba(0,0,0,.28); border:1px solid rgba(0,0,0,.15);
+    padding:.7rem .5rem; gap:.3rem; box-shadow:0 2px 0 rgba(0,0,0,.28); border:1px solid rgba(0,0,0,.15);
     cursor:pointer; text-align:center; -webkit-tap-highlight-color:transparent; user-select:none; }
   .ticket:active{ filter:brightness(.92); }
   .ticket .n{ font-family:var(--f-mono); font-weight:800; font-size:1.4rem; }
+  .piece-shape{ display:flex; align-items:center; justify-content:center; min-height:29px; }
+  .piece-shape-svg{ display:block; }
+  .piece-shape-svg rect{ fill:#5E6E48; }
+  .ticket.new .piece-shape-svg rect{ fill:#6B4B1E; }
   .ticket.locked{ cursor:not-allowed; opacity:.4; }
   .ticket.new{ background:linear-gradient(180deg,#F6DE9C,#E3B764); border:2px solid #B8862E; box-shadow:0 0 0 2px rgba(211,162,76,.4), 0 2px 0 rgba(0,0,0,.28); }
   .new-badge{ position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%; background:#B8862E;
@@ -81,14 +85,18 @@
 
   .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; z-index:50; padding:1rem; }
   .modal{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1.3rem; max-width:340px; text-align:center; }
-  .modal.wide{ max-width:420px; text-align:left; width:100%; }
   .modal p{ color:var(--text-dim); font-size:.92rem; line-height:1.5; }
   .modal-actions{ display:flex; gap:.6rem; justify-content:center; margin-top:1rem; }
-  .modal-log{ max-height:55vh; overflow-y:auto; }
   .modal-menu-list{ display:flex; flex-direction:column; gap:.5rem; }
+  .modal.wide{ max-width:420px; text-align:left; width:100%; }
 
-  .log-item{ font-size:.82rem; color:var(--text-dim); padding:.28rem 0; border-bottom:1px solid var(--line); font-family:var(--f-mono); }
-  .log-item:last-child{ border-bottom:none; }
+  .fb-intro{ color:var(--text-dim); font-size:.82rem; line-height:1.45; margin:0 0 .7rem; }
+  .fb-textarea{ width:100%; min-height:110px; resize:vertical; background:var(--surface-2); color:var(--text);
+    border:1px solid var(--line); border-radius:10px; padding:.6rem .7rem; font-family:var(--f-body); font-size:.92rem; line-height:1.4; }
+  .fb-textarea:focus{ outline:2px solid var(--moss); outline-offset:1px; }
+  .fb-textarea:disabled{ opacity:.6; }
+  .fb-success{ color:var(--moss); font-weight:700; text-align:center; padding:.8rem 0; }
+  .fb-error{ color:#F0C6B9; font-size:.82rem; margin-top:.5rem; }
 
   .finish{ max-width:500px; margin:2rem auto; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:2rem; }
   .finish h2{ font-family:var(--f-display); margin-top:0; }
@@ -123,6 +131,27 @@ var ZONE_ICONS = [
 ];
 var STORAGE_KEY = 'tipperary_state_v1';
 
+/* ---------- Feedback (relais vers les GitHub Discussions du projet) ---------- */
+/* ⚠️ À REMPLACER : mettez ici l'URL de votre Worker Cloudflare une fois déployé, ex :
+   'https://tipperary-feedback.VOTRE-SOUS-DOMAINE.workers.dev' */
+var FEEDBACK_ENDPOINT = 'https://tipperary-feedback.romanpache.workers.dev/';
+
+/* ---------- Formes des 60 tuiles Paysage (silhouettes schématiques) ---------- */
+var PIECE_SHAPES = {1:[[0,0],[0,1],[0,2]],2:[[0,0],[0,2],[1,0],[1,1],[1,2]],3:[[0,0],[1,0],[1,1]],4:[[0,0],[1,0],[1,1],[1,2]],5:[[0,0],[0,1],[1,1],[1,2],[1,3],[1,4],[2,1]],6:[[0,1],[1,0],[1,1],[1,2],[2,1]],7:[[0,0],[0,1]],8:[[0,0],[0,1],[0,2]],9:[[0,1],[1,0],[1,1],[1,2]],10:[[0,0],[0,1],[0,2]],11:[[0,0],[0,3],[1,0],[1,1],[1,2],[1,3]],12:[[0,1],[1,0],[1,1],[1,2],[2,1]],13:[[0,3],[1,0],[1,1],[1,2],[1,3],[2,1]],14:[[0,0],[0,2],[1,0],[1,1],[1,2],[2,2]],15:[[0,1],[0,2],[1,0],[1,1]],16:[[0,1],[1,0],[1,1]],17:[[0,0],[1,0],[1,1],[1,2],[2,1]],18:[[0,0],[0,2],[1,0],[1,1],[1,2],[2,0],[2,2]],19:[[0,0],[0,1]],20:[[0,0],[0,1],[1,0]],21:[[0,0],[1,0],[2,0],[2,1],[2,2]],22:[[0,2],[0,3],[1,0],[1,1],[1,2],[1,3]],23:[[0,0],[0,1],[0,2],[1,0],[1,1],[2,0]],24:[[0,0],[0,1],[0,2],[1,2],[1,3]],25:[[0,2],[1,0],[1,1],[1,2],[2,0]],26:[[0,0],[1,0],[2,0],[2,1],[2,2]],27:[[0,0],[0,1],[0,2],[0,3],[1,1],[2,1]],28:[[0,1],[0,2],[1,0],[1,1],[2,1]],29:[[0,1],[0,2],[1,0],[1,1],[1,2],[2,2]],30:[[0,0],[0,1],[0,2],[1,0]],31:[[0,0],[0,2],[1,0],[1,1],[1,2],[1,3]],32:[[0,2],[0,3],[0,4],[1,0],[1,1],[1,2]],33:[[0,0],[0,1],[0,2],[0,3]],34:[[0,1],[1,0],[1,1],[1,2]],35:[[0,0],[0,1],[1,1],[2,1],[2,2],[2,3]],36:[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]],37:[[0,1],[1,0],[1,1]],38:[[0,1],[1,0],[1,1],[1,2]],39:[[0,2],[1,0],[1,1],[1,2],[2,0],[2,1]],40:[[0,0],[0,1],[0,2],[1,0],[1,2],[1,3]],41:[[0,0],[0,1],[0,2],[1,0],[1,2],[1,3]],42:[[0,0],[0,1],[0,2],[0,3],[1,1],[1,2]],43:[[0,0],[0,1],[0,2],[1,0],[1,2],[1,3]],44:[[0,2],[1,0],[1,1],[1,2],[1,3]],45:[[0,1],[0,2],[1,0],[1,1],[1,2]],46:[[0,1],[0,2],[1,0],[1,1],[1,2]],47:[[0,1],[1,0],[1,1],[1,2],[1,3]],48:[[0,0],[1,0],[1,1],[1,2],[1,3],[2,0]],49:[[0,0],[0,1],[1,0],[1,1]],50:[[0,0],[0,1],[0,2]],51:[[0,0],[1,0],[1,1]],52:[[0,0],[1,0],[1,1]],53:[[0,1],[0,2],[1,0],[1,1]],54:[[0,1],[1,0],[1,1],[1,2]],55:[[0,1],[1,0],[1,1],[1,2],[1,3]],56:[[0,0],[1,0],[1,1]],57:[[0,1],[1,0],[1,1],[1,2],[2,1]],58:[[0,0],[0,1],[0,2]],59:[[0,0],[0,1],[0,2]],60:[[0,0],[1,0],[1,1]]};
+
+function pieceShapeSVG(num){
+  var cells = PIECE_SHAPES[num];
+  if (!cells || !cells.length) return '';
+  var maxR = 0, maxC = 0;
+  cells.forEach(function(p){ if (p[0] > maxR) maxR = p[0]; if (p[1] > maxC) maxC = p[1]; });
+  var cols = maxC + 1, rows = maxR + 1;
+  var cellPx = 9, pad = 0.12, size = 1 - 2 * pad;
+  var rects = cells.map(function(p){
+    return '<rect x="' + (p[1] + pad) + '" y="' + (p[0] + pad) + '" width="' + size + '" height="' + size + '" rx="0.16"/>';
+  }).join('');
+  return '<svg class="piece-shape-svg" viewBox="0 0 ' + cols + ' ' + rows + '" width="' + (cols * cellPx) + '" height="' + (rows * cellPx) + '" aria-hidden="true">' + rects + '</svg>';
+}
+
 /* ---------- i18n ---------- */
 var LANGS = ['fr','en','de','it','es'];
 var LANG_LABELS = { fr:'Français', en:'English', de:'Deutsch', it:'Italiano', es:'Español' };
@@ -154,24 +183,28 @@ var I18N = {
   new_game_btn: { fr:'Nouvelle partie', en:'New game', de:'Neues Spiel', it:'Nuova partita', es:'Nueva partida' },
 
   topbar_players: { fr:'— Partie à {n} joueurs', en:'— {n}-player game', de:'— Partie mit {n} Spielern', it:'— Partita a {n} giocatori', es:'— Partida a {n} jugadores' },
-  title_history: { fr:'Historique', en:'History', de:'Verlauf', it:'Cronologia', es:'Historial' },
   title_more: { fr:"Plus d'options", en:'More options', de:'Weitere Optionen', it:'Altre opzioni', es:'Más opciones' },
   title_lang: { fr:'Langue', en:'Language', de:'Sprache', it:'Lingua', es:'Idioma' },
 
-  round_last: { fr:'{round} (dernière) — terminez via ⋯ quand prêt', en:'{round} (last) — finish via ⋯ when ready', de:'{round} (letzte) — über ⋯ beenden, wenn bereit', it:'{round} (ultimo) — termina tramite ⋯ quando pronto', es:'{round} (última) — termina desde ⋯ cuando estés listo' },
+  finish_ready: { fr:'{round} — 🏁 Terminer la partie', en:'{round} — 🏁 Finish the game', de:'{round} — 🏁 Spiel beenden', it:'{round} — 🏁 Termina partita', es:'{round} — 🏁 Terminar partida' },
   round_warn: { fr:'{round} — ⚠ {have}/{need} placée(s), encore {remaining}', en:'{round} — ⚠ {have}/{need} placed, {remaining} more to go', de:'{round} — ⚠ {have}/{need} platziert, noch {remaining}', it:'{round} — ⚠ {have}/{need} posizionate, ancora {remaining}', es:'{round} — ⚠ {have}/{need} colocada(s), faltan {remaining}' },
   round_ready: { fr:'{round} — ▶ tirer les tuiles', en:'{round} — ▶ draw the tiles', de:'{round} — ▶ Plättchen ziehen', it:'{round} — ▶ pesca le tessere', es:'{round} — ▶ sacar las losetas' },
   round_word: { fr:'Manche', en:'Round', de:'Runde', it:'Round', es:'Ronda' },
 
   zone_empty: { fr:'vide', en:'empty', de:'leer', it:'vuota', es:'vacío' },
 
-  log_empty: { fr:'Aucun événement pour le moment.', en:'No events yet.', de:'Noch keine Ereignisse.', it:'Nessun evento per ora.', es:'Ningún evento por ahora.' },
-  log_drawn: { fr:'tirée', en:'drawn', de:'gezogen', it:'pescata', es:'sacada' },
-  log_placed: { fr:'placée', en:'placed', de:'platziert', it:'posizionata', es:'colocada' },
   btn_close: { fr:'Fermer', en:'Close', de:'Schließen', it:'Chiudi', es:'Cerrar' },
 
   menu_undo: { fr:'↺ Annuler la dernière action', en:'↺ Undo last action', de:'↺ Letzte Aktion rückgängig', it:'↺ Annulla ultima azione', es:'↺ Deshacer la última acción' },
   menu_finish: { fr:'🏁 Terminer la partie', en:'🏁 Finish game', de:'🏁 Spiel beenden', it:'🏁 Termina partita', es:'🏁 Terminar partida' },
+  menu_feedback: { fr:'💬 Donner un avis', en:'💬 Give feedback', de:'💬 Feedback geben', it:'💬 Lascia un feedback', es:'💬 Enviar comentario' },
+  title_feedback: { fr:'Votre avis', en:'Your feedback', de:'Ihr Feedback', it:'La tua opinione', es:'Tu opinión' },
+  feedback_intro: { fr:"Bon ou mauvais, tout retour est utile ! Votre message sera publié anonymement dans les discussions GitHub du projet.", en:'Good or bad, every bit of feedback helps! Your message will be posted anonymously in the GitHub Discussions of this project.', de:'Ob positiv oder negativ, jedes Feedback hilft! Ihre Nachricht wird anonym in den GitHub Discussions des Projekts veröffentlicht.', it:'Positivo o negativo, ogni feedback è utile! Il messaggio sarà pubblicato in forma anonima nelle GitHub Discussions del progetto.', es:'¡Todo comentario ayuda, sea bueno o malo! Tu mensaje se publicará de forma anónima en las GitHub Discussions del proyecto.' },
+  feedback_placeholder: { fr:"Qu'avez-vous pensé de l'application ?", en:'What did you think of the app?', de:'Was halten Sie von der App?', it:"Cosa ne pensi dell'app?", es:'¿Qué te ha parecido la aplicación?' },
+  feedback_send: { fr:'Envoyer', en:'Send', de:'Senden', it:'Invia', es:'Enviar' },
+  feedback_sending: { fr:'Envoi…', en:'Sending…', de:'Wird gesendet…', it:'Invio…', es:'Enviando…' },
+  feedback_success: { fr:'Merci ! Votre avis a bien été envoyé.', en:'Thanks! Your feedback has been sent.', de:'Danke! Ihr Feedback wurde gesendet.', it:'Grazie! Il tuo feedback è stato inviato.', es:'¡Gracias! Tu opinión ha sido enviada.' },
+  feedback_error: { fr:"Échec de l'envoi. Vérifiez votre connexion et réessayez.", en:'Failed to send. Check your connection and try again.', de:'Senden fehlgeschlagen. Verbindung prüfen und erneut versuchen.', it:'Invio non riuscito. Controlla la connessione e riprova.', es:'Error al enviar. Comprueba tu conexión e inténtalo de nuevo.' },
   menu_reset: { fr:'⟲ Nouvelle partie', en:'⟲ New game', de:'⟲ Neues Spiel', it:'⟲ Nuova partita', es:'⟲ Nueva partida' },
 
   reset_title: { fr:'Nouvelle partie ?', en:'New game?', de:'Neues Spiel?', it:'Nuova partita?', es:'¿Nueva partida?' },
@@ -212,7 +245,7 @@ function setLang(code){
 
 var state = null;
 var undoStack = [];
-var ui = { showLog:false, showMenu:false, showLangMenu:false, confirmReset:false, confirmFinish:false, setupPlayers:4 };
+var ui = { showMenu:false, showLangMenu:false, showFeedback:false, feedbackStatus:'idle', confirmReset:false, confirmFinish:false, setupPlayers:4 };
 
 function freshState(players){
   return {
@@ -337,7 +370,7 @@ function cancelReset(){ ui.confirmReset = false; render(); }
 function doReset(){
   try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
   state = null; undoStack = [];
-  ui = { showLog:false, showMenu:false, showLangMenu:false, confirmReset:false, confirmFinish:false, setupPlayers:4 };
+  ui = { showMenu:false, showLangMenu:false, showFeedback:false, feedbackStatus:'idle', confirmReset:false, confirmFinish:false, setupPlayers:4 };
   render();
 }
 
@@ -352,6 +385,42 @@ function doFinish(){
 
 function toggle(key){ ui[key] = !ui[key]; render(); }
 function setSetupPlayers(p){ ui.setupPlayers = p; render(); }
+
+/* ---------- Feedback ---------- */
+var feedbackDraft = '';
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function openFeedback(){ ui.showFeedback = true; ui.feedbackStatus = 'idle'; render(); }
+function closeFeedback(){ ui.showFeedback = false; render(); }
+function updateFeedbackDraft(val){ feedbackDraft = val; } // pas de render() ici : on ne veut pas perdre le focus/clavier à chaque frappe
+function sendFeedback(){
+  var text = feedbackDraft.trim();
+  if (!text || ui.feedbackStatus === 'sending') return;
+  ui.feedbackStatus = 'sending';
+  render();
+  var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timeoutId = setTimeout(function(){ if (controller) controller.abort(); }, 10000);
+  fetch(FEEDBACK_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: text, lang: currentLang }),
+    signal: controller ? controller.signal : undefined
+  }).then(function(r){
+    clearTimeout(timeoutId);
+    if (!r.ok) throw new Error('bad_status');
+    return r.json();
+  }).then(function(data){
+    if (!data || data.ok !== true) throw new Error('bad_payload');
+    feedbackDraft = '';
+    ui.feedbackStatus = 'success';
+    render();
+  }).catch(function(){
+    clearTimeout(timeoutId);
+    ui.feedbackStatus = 'error';
+    render();
+  });
+}
 
 function renderSetup(){
   var opts = [2,3,4,5].map(function(p){
@@ -392,21 +461,20 @@ function renderTopbar(){
   '<div class="topbar">' +
     '<div class="topbar-title disp">Tipperary <span class="topbar-sub">' + t('topbar_players', {n:state.players}) + '</span></div>' +
     '<div class="spacer"></div>' +
-    '<button class="icon-btn" onclick="toggle(\'showLog\')" title="' + t('title_history') + '">☰</button>' +
     '<button class="icon-btn" onclick="toggle(\'showMenu\')" title="' + t('title_more') + '">⋯</button>' +
   '</div>';
 }
 
 function renderRoundAction(){
   var roundLabel = t('round_word') + ' ' + state.round + '/' + state.totalRounds;
-  if (state.round >= state.totalRounds){
-    return '<button class="btn round-advance-btn" disabled>' + t('round_last', {round:roundLabel}) + '</button>';
-  }
   var have = state.roundPlacements.count;
   var need = state.players;
   if (have !== need){
     var remaining = need - have;
     return '<button class="btn round-advance-btn warn" disabled>' + t('round_warn', {round:roundLabel, have:have, need:need, remaining:remaining}) + '</button>';
+  }
+  if (state.round >= state.totalRounds){
+    return '<button class="btn btn-primary round-advance-btn" onclick="requestFinish()">' + t('finish_ready', {round:roundLabel}) + '</button>';
   }
   return '<button class="btn btn-primary round-advance-btn" onclick="newRound()">' + t('round_ready', {round:roundLabel}) + '</button>';
 }
@@ -423,7 +491,7 @@ function renderZones(){
           var cls = 'ticket' + (isNew ? ' new' : '') + (zoneClosed ? ' locked' : '');
           var tap = zoneClosed ? '' : ' onclick="handlePlace(' + zi + ',' + t + ')"';
           var sub = isNew ? '<span class="new-badge">★</span>' : '';
-          return '<div class="' + cls + '"' + tap + '><span class="n">n°' + t + '</span>' + sub + '</div>';
+          return '<div class="' + cls + '"' + tap + '><div class="piece-shape">' + pieceShapeSVG(t) + '</div><span class="n">n°' + t + '</span>' + sub + '</div>';
         }).join('');
     return '' +
     '<div class="zone' + (zoneClosed ? ' closed' : '') + '" style="--zc:' + ZONE_COLORS[zi] + '"' + (zoneClosed ? ' onclick="cancelPlacement(' + zi + ')"' : '') + '>' +
@@ -436,17 +504,6 @@ function renderZones(){
 
 function renderModals(){
   var html = '';
-  if (ui.showLog){
-    var items = state.log.slice().reverse().map(function(e){
-      return '<div class="log-item">M' + e.round + ' · ' + ZONE_NAMES[e.zone] + ' · n°' + e.tile + ' · ' + (e.action==='draw' ? t('log_drawn') : t('log_placed')) + '</div>';
-    }).join('');
-    html += '' +
-    '<div class="modal-backdrop"><div class="modal wide">' +
-      '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.5rem;">' + t('title_history') + '</div>' +
-      '<div class="modal-log">' + (state.log.length===0 ? t('log_empty') : items) + '</div>' +
-      '<div class="modal-actions"><button class="btn btn-primary" onclick="toggle(\'showLog\')">' + t('btn_close') + '</button></div>' +
-    '</div></div>';
-  }
   if (ui.showMenu){
     html += '' +
     '<div class="modal-backdrop"><div class="modal">' +
@@ -454,6 +511,7 @@ function renderModals(){
       '<div class="modal-menu-list">' +
         '<button class="btn" onclick="toggle(\'showMenu\');handleUndo()" ' + (undoStack.length===0?'disabled':'') + '>' + t('menu_undo') + '</button>' +
         '<button class="btn" onclick="toggle(\'showMenu\');toggle(\'showLangMenu\')">🌐 ' + t('title_lang') + '</button>' +
+        '<button class="btn" onclick="toggle(\'showMenu\');openFeedback()">' + t('menu_feedback') + '</button>' +
         '<button class="btn" onclick="toggle(\'showMenu\');requestFinish()">' + t('menu_finish') + '</button>' +
         '<button class="btn btn-danger" onclick="toggle(\'showMenu\');requestReset()">' + t('menu_reset') + '</button>' +
       '</div>' +
@@ -469,6 +527,30 @@ function renderModals(){
       '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.8rem;">' + t('title_lang') + '</div>' +
       '<div class="modal-menu-list">' + langBtns + '</div>' +
       '<div class="modal-actions"><button class="btn" onclick="toggle(\'showLangMenu\')">' + t('btn_close') + '</button></div>' +
+    '</div></div>';
+  }
+  if (ui.showFeedback){
+    var fbBody;
+    if (ui.feedbackStatus === 'success'){
+      fbBody = '' +
+        '<div class="fb-success">✓ ' + t('feedback_success') + '</div>' +
+        '<div class="modal-actions"><button class="btn btn-primary" onclick="closeFeedback()">' + t('btn_close') + '</button></div>';
+    } else {
+      var sending = ui.feedbackStatus === 'sending';
+      var errorHTML = ui.feedbackStatus === 'error' ? '<div class="fb-error">⚠ ' + t('feedback_error') + '</div>' : '';
+      fbBody = '' +
+        '<p class="fb-intro">' + t('feedback_intro') + '</p>' +
+        '<textarea id="feedbackTextarea" class="fb-textarea" maxlength="2000" placeholder="' + t('feedback_placeholder') + '" oninput="updateFeedbackDraft(this.value)"' + (sending ? ' disabled' : '') + '>' + escapeHtml(feedbackDraft) + '</textarea>' +
+        errorHTML +
+        '<div class="modal-actions">' +
+          '<button class="btn" onclick="closeFeedback()"' + (sending ? ' disabled' : '') + '>' + t('btn_cancel') + '</button>' +
+          '<button class="btn btn-primary" onclick="sendFeedback()"' + (sending ? ' disabled' : '') + '>' + (sending ? t('feedback_sending') : t('feedback_send')) + '</button>' +
+        '</div>';
+    }
+    html += '' +
+    '<div class="modal-backdrop"><div class="modal wide">' +
+      '<div class="disp" style="font-size:1.05rem;font-weight:700;margin-bottom:.5rem;">' + t('title_feedback') + '</div>' +
+      fbBody +
     '</div></div>';
   }
   if (ui.confirmReset){
